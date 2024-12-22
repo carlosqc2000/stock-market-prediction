@@ -1,1 +1,13 @@
+# Ignorar el entorno virtual
 env/
+
+# Archivos temporales de Python
+*.pyc
+__pycache__/
+
+# Notebooks temporales
+*.ipynb_checkpoints/
+
+# Archivos de datos
+data/raw/
+data/processed/
