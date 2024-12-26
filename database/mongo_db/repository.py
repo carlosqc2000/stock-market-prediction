@@ -1,157 +1,158 @@
 from pymongo import MongoClient
 from decouple import config
+from bson.objectid import ObjectId
+from typing import Optional, Dict
 
 class MongoRepository:
     def __init__(self):
         """
-        Inicializa la conexión a la base de datos MongoDB.
+        Initializes the connection to the MongoDB database.
         """
         try:
             self.mongo_uri = config("MONGO_URI")
             self.client = MongoClient(self.mongo_uri)
             self.db = self.client["Data_Fondos"]
-            print("Conexión a MongoDB establecida.")
+            print("Connection to MongoDB established.")
         except Exception as e:
-            print(f"Error al conectar con MongoDB: {e}")
-
+            print(f"Error connecting to MongoDB: {e}")
 
     def list_collections(self):
         """
-        Lista todas las colecciones disponibles en la base de datos.
+        Lists all collections available in the database.
         """
         try:
             collections = self.db.list_collection_names()
             return collections
         except Exception as e:
-            print(f"Error al listar colecciones: {e}")
+            print(f"Error listing collections: {e}")
             return []
 
-    # ------------------------- CRUD PARA PRECIOS -------------------------
+    # ------------------------- CRUD FOR PRICES -------------------------
 
-    def create_price(self, price_data):
+    def create_price(self, price_data: Dict) -> None:
         """
-        Inserta un documento de precio en la colección 'Prices'.
+        Inserts a price document into the 'Prices' collection.
 
         Args:
-            price_data (dict): Diccionario con los datos del precio.
+            price_data (Dict): Dictionary containing price data.
         """
         try:
             self.db.Prices.insert_one(price_data)
-            print(f"Precio insertado: {price_data['date']}")
+            print(f"Price inserted: {price_data['date']}")
         except Exception as e:
-            print(f"Error al insertar precio: {e}")
+            print(f"Error inserting price: {e}")
 
-    def read_price_by_id(self, price_id):
+    def read_price_by_id(self, price_id: ObjectId) -> Optional[Dict]:
         """
-        Recupera un documento de precio por su ID en la colección 'Prices'.
+        Retrieves a price document by its ID from the 'Prices' collection.
 
         Args:
-            price_id (ObjectId): ID del documento a recuperar.
+            price_id (ObjectId): ID of the document to retrieve.
 
         Returns:
-            dict: Documento del precio o None si no se encuentra.
+            Optional[Dict]: The price document or None if not found.
         """
         try:
             price = self.db.Prices.find_one({"_id": price_id})
             return price
         except Exception as e:
-            print(f"Error al recuperar precio por ID: {e}")
+            print(f"Error retrieving price by ID: {e}")
             return None
 
-    def update_price_by_id(self, price_id, new_data):
+    def update_price_by_id(self, price_id: ObjectId, new_data: Dict) -> None:
         """
-        Actualiza un documento de precio en la colección 'Prices' por su ID.
+        Updates a price document in the 'Prices' collection by its ID.
 
         Args:
-            price_id (ObjectId): ID del documento a actualizar.
-            new_data (dict): Datos nuevos para actualizar.
+            price_id (ObjectId): ID of the document to update.
+            new_data (Dict): New data to update.
         """
         try:
             result = self.db.Prices.update_one({"_id": price_id}, {"$set": new_data})
             if result.modified_count > 0:
-                print(f"Precio actualizado: {price_id}")
+                print(f"Price updated: {price_id}")
             else:
-                print(f"No se encontró un precio con ID: {price_id}")
+                print(f"No price found with ID: {price_id}")
         except Exception as e:
-            print(f"Error al actualizar precio por ID: {e}")
+            print(f"Error updating price by ID: {e}")
 
-    def delete_price_by_id(self, price_id):
+    def delete_price_by_id(self, price_id: ObjectId) -> None:
         """
-        Elimina un documento de precio de la colección 'Prices' por su ID.
+        Deletes a price document from the 'Prices' collection by its ID.
 
         Args:
-            price_id (ObjectId): ID del documento a eliminar.
+            price_id (ObjectId): ID of the document to delete.
         """
         try:
             result = self.db.Prices.delete_one({"_id": price_id})
             if result.deleted_count > 0:
-                print(f"Precio eliminado: {price_id}")
+                print(f"Price deleted: {price_id}")
             else:
-                print(f"No se encontró un precio con ID: {price_id}")
+                print(f"No price found with ID: {price_id}")
         except Exception as e:
-            print(f"Error al eliminar precio por ID: {e}")
+            print(f"Error deleting price by ID: {e}")
 
-    # ------------------------- CRUD PARA NOTICIAS -------------------------
+    # ------------------------- CRUD FOR NEWS -------------------------
 
-    def create_news(self, news_data):
+    def create_news(self, news_data: Dict) -> None:
         """
-        Inserta un documento de noticia en la colección 'News'.
+        Inserts a news document into the 'News' collection.
 
         Args:
-            news_data (dict): Diccionario con los datos de la noticia.
+            news_data (Dict): Dictionary containing news data.
         """
         try:
             self.db.News.insert_one(news_data)
-            print(f"Noticia insertada: {news_data['title']}")
+            print(f"News inserted: {news_data['title']}")
         except Exception as e:
-            print(f"Error al insertar noticia: {e}")
+            print(f"Error inserting news: {e}")
 
-    def read_news(self, symbol):
+    def read_news_by_id(self, news_id: ObjectId) -> Optional[Dict]:
         """
-        Recupera todas las noticias para un símbolo específico de la colección 'News'.
+        Retrieves a news document by its ID from the 'News' collection.
 
         Args:
-            symbol (str): Símbolo de la empresa (e.g., 'AAPL').
+            news_id (ObjectId): ID of the document to retrieve.
 
         Returns:
-            list: Lista de documentos de noticias.
+            Optional[Dict]: The news document or None if not found.
         """
         try:
-            news = list(self.db.News.find({"symbol": symbol}))
+            news = self.db.News.find_one({"_id": news_id})
             return news
         except Exception as e:
-            print(f"Error al recuperar noticias: {e}")
-            return []
+            print(f"Error retrieving news by ID: {e}")
+            return None
 
-    def update_news(self, news_id, new_data):
+    def update_news_by_id(self, news_id: ObjectId, new_data: Dict) -> None:
         """
-        Actualiza un documento de noticia en la colección 'News'.
+        Updates a news document in the 'News' collection by its ID.
 
         Args:
-            news_id (ObjectId): ID del documento a actualizar.
-            new_data (dict): Datos nuevos para actualizar.
+            news_id (ObjectId): ID of the document to update.
+            new_data (Dict): New data to update.
         """
         try:
             result = self.db.News.update_one({"_id": news_id}, {"$set": new_data})
             if result.modified_count > 0:
-                print(f"Noticia actualizada: {news_id}")
+                print(f"News updated: {news_id}")
             else:
-                print(f"No se encontró una noticia con ID: {news_id}")
+                print(f"No news found with ID: {news_id}")
         except Exception as e:
-            print(f"Error al actualizar noticia: {e}")
+            print(f"Error updating news by ID: {e}")
 
-    def delete_news(self, news_id):
+    def delete_news_by_id(self, news_id: ObjectId) -> None:
         """
-        Elimina un documento de noticia de la colección 'News'.
+        Deletes a news document from the 'News' collection by its ID.
 
         Args:
-            news_id (ObjectId): ID del documento a eliminar.
+            news_id (ObjectId): ID of the document to delete.
         """
         try:
             result = self.db.News.delete_one({"_id": news_id})
             if result.deleted_count > 0:
-                print(f"Noticia eliminada: {news_id}")
+                print(f"News deleted: {news_id}")
             else:
-                print(f"No se encontró una noticia con ID: {news_id}")
+                print(f"No news found with ID: {news_id}")
         except Exception as e:
-            print(f"Error al eliminar noticia: {e}")
+            print(f"Error deleting news by ID: {e}")
